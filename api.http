@@ -1,0 +1,19 @@
+@api-version = 2020-05-01-preview
+@host = http://localhost:7071
+@signature = &sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=O-emTMTt9vbi70kEYV2LOOMtA04mcEKDIcrHTZWZeio
+
+###
+POST {{host}}/api/HttpHelloWorld/triggers/manual/invoke?api-version={{api-version}}{{signature}} HTTP/1.1
+Content-Type: application/json
+
+{
+    "id": 123,
+    "name": "John",
+    "phone": "+1234567890",
+    "address": {
+        "street": "Street 1",
+        "city": "City",
+        "postalCode": "12345",
+        "country": "Country"
+	}
+}
