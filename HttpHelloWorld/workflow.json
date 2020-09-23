@@ -2,16 +2,47 @@
     "definition": {
         "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
         "actions": {
-            "Response": {
-                "type": "Response",
-                "kind": "http",
-                "inputs": {
-                    "statusCode": 200,
-                    "body": {
-                        "phone": "@{triggerBody()?['phone']}"
+            "Condition": {
+                "type": "If",
+                "expression": {
+                    "and": [
+                        {
+                            "equals": [
+                                "@triggerBody()?['address']?['country']",
+                                "Finland"
+                            ]
+                        }
+                    ]
+                },
+                "actions": {
+                    "Record_inside_Finland": {
+                        "type": "Response",
+                        "kind": "http",
+                        "inputs": {
+                            "statusCode": 200,
+                            "body": {
+                                "phone": "@{triggerBody()?['phone']}"
+                            }
+                        },
+                        "runAfter": {}
                     }
                 },
-                "runAfter": {}
+                "runAfter": {},
+                "else": {
+                    "actions": {
+                        "Record_outside_Finland": {
+                            "type": "Response",
+                            "kind": "http",
+                            "inputs": {
+                                "statusCode": 401,
+                                "body": {
+                                    "error": "This record is not from 'Finland'."
+                                }
+                            },
+                            "runAfter": {}
+                        }
+                    }
+                }
             }
         },
         "triggers": {
