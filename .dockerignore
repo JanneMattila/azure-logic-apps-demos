@@ -1,0 +1,8 @@
+**/[Bb]in/
+**/[Oo]bj/
+workflow-designtime/
+.vscode/
+**/*.md
+global.json
+LICENSE
+local.settings.json
