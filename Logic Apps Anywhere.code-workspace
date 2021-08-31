@@ -1,0 +1,18 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"debug.internalConsoleOptions": "neverOpen"
+	},
+	"extensions": {
+		"recommendations": [
+			"ms-azuretools.vscode-azurelogicapps",
+			"ms-azuretools.vscode-bicep",
+			"ms-vscode.powershell",
+			"ms-azuretools.vscode-docker"
+		]
+	}
+}
