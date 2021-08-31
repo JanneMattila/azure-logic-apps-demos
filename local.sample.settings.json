@@ -1,0 +1,12 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "WORKFLOWS_TENANT_ID": "<your_tenant_id>",
+    "WORKFLOWS_SUBSCRIPTION_ID": "<your_subscription_id>",
+    "WORKFLOWS_RESOURCE_GROUP_NAME": "logicapp-standard-rg",
+    "WORKFLOWS_LOCATION_NAME": "northeurope",
+    "WORKFLOWS_MANAGEMENT_BASE_URI": "https://management.azure.com/",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet"
+  }
+}
