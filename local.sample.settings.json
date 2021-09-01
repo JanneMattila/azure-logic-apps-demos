@@ -7,6 +7,9 @@
     "WORKFLOWS_RESOURCE_GROUP_NAME": "logicapp-standard-rg",
     "WORKFLOWS_LOCATION_NAME": "northeurope",
     "WORKFLOWS_MANAGEMENT_BASE_URI": "https://management.azure.com/",
-    "FUNCTIONS_WORKER_RUNTIME": "dotnet"
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet",
+
+    "SHAREPOINT_CONNECTION_URL": "<https://<address>.common.logic-<region>.azure-apihub.net/apim/sharepointonline/<id>/>",
+    "SHAREPOINT_CONNECTION_KEY": "<connection_key>"
   }
 }
