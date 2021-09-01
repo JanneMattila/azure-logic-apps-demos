@@ -16,7 +16,10 @@
                         "inferContentType": true
                     }
                 },
-                "runAfter": {}
+                "runAfter": {},
+                "limit": {
+                    "timeout": "P10s"
+                }
             },
             "Response": {
                 "type": "Response",
