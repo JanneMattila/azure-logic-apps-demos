@@ -11,15 +11,12 @@
                         }
                     },
                     "method": "get",
-                    "path": "/datasets/@{encodeURIComponent(encodeURIComponent(parameters('SharePointSite')))}/files/@{encodeURIComponent(triggerBody()?['name'])}/content",
+                    "path": "/datasets/@{encodeURIComponent(encodeURIComponent(parameters('SharePointSite')))}/files/@{encodeURIComponent(encodeUriComponent(triggerBody()?['name']))}/content",
                     "queries": {
                         "inferContentType": true
                     }
                 },
-                "runAfter": {},
-                "limit": {
-                    "timeout": "P10s"
-                }
+                "runAfter": {}
             },
             "Response": {
                 "type": "Response",

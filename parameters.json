@@ -1,6 +1,6 @@
 {
   "SharePointSite": {
     "type": "String",
-    "value": "https://contoso.sharepoint.com/sites/demo"
+    "value": "@appsetting('SHAREPOINT_SITE')"
   }
 }

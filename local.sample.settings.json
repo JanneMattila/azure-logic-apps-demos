@@ -9,6 +9,7 @@
     "WORKFLOWS_MANAGEMENT_BASE_URI": "https://management.azure.com/",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet",
 
+    "SHAREPOINT_SITE": "https://contoso.sharepoint.com/sites/demo",
     "SHAREPOINT_CONNECTION_URL": "<https://<address>.common.logic-<region>.azure-apihub.net/apim/sharepointonline/<id>/>",
     "SHAREPOINT_CONNECTION_KEY": "<connection_key>"
   }
