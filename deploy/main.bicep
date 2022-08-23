@@ -2,10 +2,11 @@ param logicAppName string
 
 param appInsightsName string = 'la-ai'
 param storageName string = logicAppName
+param location string = resourceGroup().location
 
 resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   name: appInsightsName
-  location: resourceGroup().location
+  location: location
   kind: 'web'
   properties: {
     Application_Type: 'web'
@@ -14,7 +15,7 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
 
 resource storageaccount 'Microsoft.Storage/storageAccounts@2021-02-01' = {
   name: storageName
-  location: resourceGroup().location
+  location: location
   kind: 'StorageV2'
   sku: {
     name: 'Standard_LRS'
@@ -27,16 +28,16 @@ resource storageaccount 'Microsoft.Storage/storageAccounts@2021-02-01' = {
 
 resource appServicePlan 'Microsoft.Web/serverfarms@2020-12-01' = {
   name: 'workflowPlan'
-  location: resourceGroup().location
+  location: location
   sku: {
     name: 'WS1'
     capacity: 1
   }
 }
 
-resource azureFunction 'Microsoft.Web/sites@2020-12-01' = {
+resource logicApp 'Microsoft.Web/sites@2020-12-01' = {
   name: logicAppName
-  location: resourceGroup().location
+  location: location
   kind: 'functionapp,workflowapp'
   identity: {
     type: 'SystemAssigned'
@@ -46,6 +47,9 @@ resource azureFunction 'Microsoft.Web/sites@2020-12-01' = {
     clientAffinityEnabled: false
     httpsOnly: true
     siteConfig: {
+      alwaysOn: true
+      http20Enabled: true
+      ftpsState: 'Disabled'
       appSettings: [
         {
           name: 'AzureWebJobsDashboard'
@@ -99,3 +103,5 @@ resource azureFunction 'Microsoft.Web/sites@2020-12-01' = {
     }
   }
 }
+
+output appServicePlan string = appServicePlan.id

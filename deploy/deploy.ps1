@@ -9,8 +9,7 @@ Param (
     [string] $LogicAppName = "contosologicapp-local",
 
     [string] $Template = "azuredeploy.json",
-    [string] $TemplateParameters = "$PSScriptRoot\azuredeploy.parameters.json",
-    [switch] $PreserveDeploymentContainer
+    [string] $TemplateParameters = "$PSScriptRoot\azuredeploy.parameters.json"
 )
 
 $ErrorActionPreference = "Stop"
@@ -57,12 +56,33 @@ $result | Select-Object -ExcludeProperty TemplateLinkString
 
 $apimGateway = $result.Outputs.apimGateway.value
 
-# Publish variable to the Azure DevOps agents so that they
+# Publish variable to the GitHub Action runner so that they
 # can be used in follow-up tasks such as application deployment
-Write-Host "##vso[task.setvariable variable=Custom.APIMGateway;]$apimGateway"
+Write-Host "::set-output name=LogicAppName::$($LogicAppName)"
+
+$body = ConvertTo-Json @{
+    "id"      = 123
+    "name"    = "John"
+    "phone"   = "+1234567890"
+    "address" = @{
+        "street"     = "Street 1"
+        "city"       = "City"
+        "postalCode" = "12345"
+        "country"    = "Finland"
+    }
+}
+
+$workflowName = "HttpHelloWorld"
+$url = 
+"/resourceGroups/$ResourceGroupName" +
+"/providers/Microsoft.Web/sites/$LogicAppName" +
+"/hostruntime/runtime/webhooks/workflow/api/management/workflows/$workflowName" +
+"/triggers/manual/listCallbackUrl?api-version=2018-11-01"
+
+$response = Invoke-AzRestMethod -Path $url
 
 Write-Host "Smoke testing that our *MANDATORY* API is up and running..."
-$webAppUri = "$apimGateway/users"
+$workflowTriggerUri = "$($response.value)"
 $data = @{
     id      = 1
     name    = "Doe"
@@ -70,13 +90,13 @@ $data = @{
         street     = "My street 1"
         postalCode = "12345"
         city       = "My city"
-        country    = "My country"
+        country    = "Finland"
     }
 }
 $body = ConvertTo-Json $data
 for ($i = 0; $i -lt 60; $i++) {
     try {
-        $request = Invoke-WebRequest -Body $body -ContentType "application/json" -Method "POST" -DisableKeepAlive -Uri $webAppUri -ErrorAction SilentlyContinue
+        $request = Invoke-WebRequest -Body $body -ContentType "application/json" -Method "POST" -DisableKeepAlive -Uri $workflowTriggerUri -ErrorAction SilentlyContinue
         Write-Host "API status code $($request.StatusCode)."
 
         if ($request.StatusCode -eq 200) {
