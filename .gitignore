@@ -264,3 +264,8 @@ __pycache__/
 
 app/
 .debug/
+
+# Azurite
+__azurite_*.json
+__blobstorage__/
+__queuestorage__/

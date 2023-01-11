@@ -1,6 +1,7 @@
 {
-    "azureLogicAppsStandard.deploySubpath": ".",
+    "azureLogicAppsStandard.deploySubpath": "integration",
     "azureLogicAppsStandard.projectLanguage": "JavaScript",
-    "azureLogicAppsStandard.projectRuntime": "~3",
-    "azureFunctions.suppressProject": true
+    "azureLogicAppsStandard.projectRuntime": "~4",
+    "azureFunctions.suppressProject": true,
+    "azureLogicAppsStandard.projectSubpath": "integration"
 }
