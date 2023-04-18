@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Order>
+  <Name>John Doe</Name>
+  <Addresses>
+    <Address>
+        <Type>Shipping</Type>
+        <Street>Street 1</Street>
+        <PostCode>Shipping</PostCode>
+        <Country>Shipping</Country>
+    </Address>
+  </Addresses>
+</Order>
