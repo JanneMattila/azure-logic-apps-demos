@@ -22,6 +22,10 @@ sequenceDiagram
     Client2->>Integration: Request Blocked in EasyAuth
 ```
 
+## Errors
+
+If you use both SAS and Bearer tokens in the same request, you will get the following error:
+
 ```
 GET https://<workflow>.azurewebsites.net:443/api/workflow1/triggers/request/invoke?api-version=2022-05-01&sp=%2Ftriggers%2Frequest%2Frun&sv=1.0&sig=Qs...hAB8o
 Authorization: Bearer <token>
@@ -35,6 +39,8 @@ Authorization: Bearer <token>
   }
 }
 ```
+
+If you use SAS authentication while it is disabled, you will get the following error:
 
 ```
 GET https://<workflow>.azurewebsites.net:443/api/workflow1/triggers/request/invoke?api-version=2022-05-01&sp=%2Ftriggers%2Frequest%2Frun&sv=1.0&sig=Qs...hAB8o
