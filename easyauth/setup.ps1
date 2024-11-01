@@ -50,9 +50,9 @@ $clientPassword = ConvertTo-SecureString $integrationClientApp1Secret.SecretText
 $credentials = New-Object System.Management.Automation.PSCredential($integrationClientApp1.AppId, $clientPassword)
 Connect-AzAccount -ServicePrincipal -Credential $credentials -TenantId $tenantId
 
-$integrationClient1Token = Get-AzAccessToken -Resource $integrationApp.AppId
-$integrationClient1Token.Token
-$integrationClient1Token.Token | Set-Clipboard
+$integrationClient1Token = Get-AzAccessToken -Resource $integrationApp.AppId -AsSecureString
+$integrationClient1Token.Token | ConvertFrom-SecureString -AsPlainText
+$integrationClient1Token.Token | ConvertFrom-SecureString -AsPlainText | Set-Clipboard
 # Study in jwt.ms
 
 Invoke-RestMethod `
@@ -67,9 +67,9 @@ $clientPassword = ConvertTo-SecureString $integrationClientApp2Secret.SecretText
 $credentials = New-Object System.Management.Automation.PSCredential($integrationClientApp2.AppId, $clientPassword)
 Connect-AzAccount -ServicePrincipal -Credential $credentials -TenantId $tenantId
 
-$integrationClient2Token = Get-AzAccessToken -Resource $integrationApp.AppId
-$integrationClient2Token.Token
-$integrationClient2Token.Token | Set-Clipboard
+$integrationClient2Token = Get-AzAccessToken -Resource $integrationApp.AppId -AsSecureString
+$integrationClient2Token.Token | ConvertFrom-SecureString -AsPlainText
+$integrationClient2Token.Token | ConvertFrom-SecureString -AsPlainText | Set-Clipboard
 # Study in jwt.ms
 
 Invoke-RestMethod `
@@ -84,9 +84,9 @@ $clientPassword = ConvertTo-SecureString $integrationClientApp3Secret.SecretText
 $credentials = New-Object System.Management.Automation.PSCredential($integrationClientApp3.AppId, $clientPassword)
 Connect-AzAccount -ServicePrincipal -Credential $credentials -TenantId $tenantId
 
-$integrationClient3Token = Get-AzAccessToken -Resource $integrationApp.AppId
-$integrationClient3Token.Token
-$integrationClient3Token.Token | Set-Clipboard
+$integrationClient3Token = Get-AzAccessToken -Resource $integrationApp.AppId -AsSecureString
+$integrationClient3Token.Token | ConvertFrom-SecureString -AsPlainText
+$integrationClient3Token.Token | ConvertFrom-SecureString -AsPlainText | Set-Clipboard
 # Study in jwt.ms
 
 # This will fail because the client is not enabled in the template!
