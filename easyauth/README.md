@@ -9,18 +9,9 @@ Key points:
 
 See `main.bicep` for the complete configuration and `setup.ps1` for the demo setup:
 
-```mermaid
-sequenceDiagram
-    participant Client1
-    participant Client2
-    participant Client3
-    participant Integration
-    Client1->>Integration: Request
-    Integration-->>Client1: Response OK
-    Client2->>Integration: Request
-    Integration-->>Client2: Response OK
-    Client2->>Integration: Request Blocked in EasyAuth
-```
+![Logic App and EasyAuth](easyauth.svg)
+
+Clients `Client 1` and `Client 2` can trigger the workflow but `Client 3` cannot.
 
 ## Errors
 

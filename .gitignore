@@ -269,3 +269,5 @@ app/
 __azurite_*.json
 __blobstorage__/
 __queuestorage__/
+
+**/*.svg.bkp
