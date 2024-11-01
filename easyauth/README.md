@@ -1,5 +1,7 @@
 # Logic Apps and EasyAuth
 
+Reference: [Trigger workflows in Standard logic apps with Easy Auth](https://techcommunity.microsoft.com/t5/azure-integration-services-blog/trigger-workflows-in-standard-logic-apps-with-easy-auth/ba-p/3207378)
+
 ```mermaid
 sequenceDiagram
     participant Client1
