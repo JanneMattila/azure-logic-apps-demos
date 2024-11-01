@@ -105,6 +105,10 @@ resource workflowApp 'Microsoft.Web/sites@2022-03-01' = {
           name: 'APP_KIND'
           value: 'workflowApp'
         }
+        {
+          name: 'WEBSITE_AUTH_AAD_ALLOWED_TENANTS'
+          value: tenantId
+        }
       ]
       cors: {}
       use32BitWorkerProcess: false
