@@ -2,6 +2,13 @@
 
 Reference: [Trigger workflows in Standard logic apps with Easy Auth](https://techcommunity.microsoft.com/t5/azure-integration-services-blog/trigger-workflows-in-standard-logic-apps-with-easy-auth/ba-p/3207378)
 
+Key points:
+- Add `authsettingsV2` to define the EasyAuth configuration
+- Add `logicAppsAccessControlConfiguration` to block SAS authentication on triggers
+- Portal features e.g., workflow designer, are working as expected
+
+See `main.bicep` for the complete configuration and `setup.ps1` for the demo setup:
+
 ```mermaid
 sequenceDiagram
     participant Client1
