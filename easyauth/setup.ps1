@@ -96,3 +96,11 @@ Invoke-RestMethod `
     -ContentType "application/json" `
     -Headers @{"Authorization" = "Bearer $($integrationClient3Token.Token)" }
 # -> Invoke-RestMethod: You do not have permission to view this directory or page. 
+
+# Cleanup:
+Remove-AzADApplication -ObjectId $integrationApp.Id
+Remove-AzADApplication -ObjectId $integrationClientApp1.Id
+Remove-AzADApplication -ObjectId $integrationClientApp2.Id
+Remove-AzADApplication -ObjectId $integrationClientApp3.Id
+
+Remove-AzResourceGroup -Name $deployment.ResourceGroupName -Force
