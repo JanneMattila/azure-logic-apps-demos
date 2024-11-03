@@ -110,7 +110,7 @@ resource workflowApp 'Microsoft.Web/sites@2022-03-01' = {
           value: tenantId
         }
         {
-          name: 'WEBSITE_AUTH_AAD_REQUIRE_CLIENT_SERVICE_PRINCIPAL '
+          name: 'WEBSITE_AUTH_AAD_REQUIRE_CLIENT_SERVICE_PRINCIPAL'
           value: 'true'
         }
       ]
