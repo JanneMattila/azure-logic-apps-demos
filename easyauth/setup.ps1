@@ -32,6 +32,7 @@ $integrationClientApp3Secret = New-AzADAppCredential -ObjectId $integrationClien
 "Integration Client 3 AppId: $($integrationClientApp3.AppId)"
 "Integration Client 3 Secret: $($integrationClientApp3Secret.SecretText)"
 
+# Prepare parameters for the deployment:
 $clientId = $integrationApp.AppId
 $integrationClientIds = @($integrationClientApp1.AppId, $integrationClientApp2.AppId)
 
@@ -56,10 +57,9 @@ $integrationClient1Token.Token | ConvertFrom-SecureString -AsPlainText | Set-Cli
 # Study in jwt.ms
 
 Invoke-RestMethod `
-    -Method Post `
     -Uri $requestUri `
-    -ContentType "application/json" `
-    -Headers @{"Authorization" = "Bearer $($integrationClient1Token.Token)" }
+    -Authentication Bearer `
+    -Token $integrationClient1Token.Token
 
 # Integration Client 2 test:
 $tenantId = (Get-AzContext).Tenant.Id
@@ -73,10 +73,9 @@ $integrationClient2Token.Token | ConvertFrom-SecureString -AsPlainText | Set-Cli
 # Study in jwt.ms
 
 Invoke-RestMethod `
-    -Method Post `
     -Uri $requestUri `
-    -ContentType "application/json" `
-    -Headers @{"Authorization" = "Bearer $($integrationClient2Token.Token)" }
+    -Authentication Bearer `
+    -Token $integrationClient2Token.Token
 
 # Integration Client 3 test:
 $tenantId = (Get-AzContext).Tenant.Id
@@ -91,10 +90,9 @@ $integrationClient3Token.Token | ConvertFrom-SecureString -AsPlainText | Set-Cli
 
 # This will fail because the client is not enabled in the template!
 Invoke-RestMethod `
-    -Method Post `
     -Uri $requestUri `
-    -ContentType "application/json" `
-    -Headers @{"Authorization" = "Bearer $($integrationClient3Token.Token)" }
+    -Authentication Bearer `
+    -Token $integrationClient3Token.Token
 # -> Invoke-RestMethod: You do not have permission to view this directory or page. 
 
 # Cleanup:
