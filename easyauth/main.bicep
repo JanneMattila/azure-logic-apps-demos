@@ -4,7 +4,6 @@ param skuCode string = 'WS1'
 
 param clientId string
 param integrationClientIds array
-param tenantId string = subscription().tenantId
 
 var workflowName = 'workflow${uniqueString(resourceGroup().name)}'
 var storageAccountName = 'stor${uniqueString(resourceGroup().name)}'
@@ -107,7 +106,7 @@ resource workflowApp 'Microsoft.Web/sites@2022-03-01' = {
         }
         {
           name: 'WEBSITE_AUTH_AAD_ALLOWED_TENANTS'
-          value: tenantId
+          value: subscription().tenantId
         }
         {
           name: 'WEBSITE_AUTH_AAD_REQUIRE_CLIENT_SERVICE_PRINCIPAL'
@@ -174,7 +173,7 @@ resource authentication 'Microsoft.Web/sites/config@2022-09-01' = {
         }
         registration: {
           clientId: clientId
-          openIdIssuer: 'https://sts.windows.net/${tenantId}/v2.0'
+          openIdIssuer: 'https://sts.windows.net/${subscription().tenantId}/v2.0'
         }
         validation: {
           allowedAudiences: [
