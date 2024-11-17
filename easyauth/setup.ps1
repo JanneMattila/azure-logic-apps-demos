@@ -34,7 +34,7 @@ $integrationClientApp3Secret = New-AzADAppCredential -ObjectId $integrationClien
 
 # Prepare parameters for the deployment:
 $clientId = $integrationApp.AppId
-$integrationClientIds = @($integrationClientApp1.AppId, $integrationClientApp2.AppId)
+$integrationClientIds = $integrationClientApp1.AppId, $integrationClientApp2.AppId
 
 # Deploy the EasyAuth Logic App:
 $deployment = .\deploy.ps1 -ClientId $clientId -IntegrationClientIds $integrationClientIds
