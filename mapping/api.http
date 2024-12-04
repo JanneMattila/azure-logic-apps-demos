@@ -1,0 +1,17 @@
+@logicAppUri = {{$dotenv logicAppUri}}
+
+###
+POST {{logicAppUri}}
+Content-Type: application/json
+
+{
+  "key": "abc"
+}
+
+###
+POST {{logicAppUri}}
+Content-Type: application/json
+
+{
+  "key": "none-existing-map"
+}

@@ -271,3 +271,4 @@ __blobstorage__/
 __queuestorage__/
 
 **/*.svg.bkp
+**/.env
