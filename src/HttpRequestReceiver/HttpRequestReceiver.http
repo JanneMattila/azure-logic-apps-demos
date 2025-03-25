@@ -1,0 +1,54 @@
+@HttpRequestReceiver_HostAddress = http://localhost:5240
+
+# Test the dashboard UI (open in browser)
+# {{HttpRequestReceiver_HostAddress}}/
+
+# Submit a valid counter
+POST {{HttpRequestReceiver_HostAddress}}/api/data
+Content-Type: application/json
+
+{
+    "counter": 1,
+    "runID": "test-run-001"
+}
+
+###
+
+# Submit another valid counter (sequential)
+POST {{HttpRequestReceiver_HostAddress}}/api/data
+Content-Type: application/json
+
+{
+    "counter": 2,
+    "runID": "test-run-001"
+}
+
+###
+
+# Submit a duplicate counter (should generate an error)
+POST {{HttpRequestReceiver_HostAddress}}/api/data
+Content-Type: application/json
+
+{
+    "counter": 2,
+    "runID": "test-run-001"
+}
+
+###
+
+# Submit a counter with a gap/skip (should generate an error)
+POST {{HttpRequestReceiver_HostAddress}}/api/data
+Content-Type: application/json
+
+{
+    "counter": 5,
+    "runID": "test-run-001"
+}
+
+###
+
+# Get the list of errors
+GET {{HttpRequestReceiver_HostAddress}}/api/errors
+Accept: application/json
+
+###

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Error Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1 { color: #333; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #f2f2f2; }
+        .error-row { background-color: #ffebee; }
+        .timestamp { font-size: 0.8em; color: #666; }
+        #counter { margin-top: 10px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>Error Dashboard</h1>
+    <div id='counter'>Total Errors: <span id='errorCount'>0</span></div>
+    <table id='errorTable'>
+        <thead>
+            <tr>
+                <th>Counter</th>
+                <th>Run ID</th>
+                <th>Error</th>
+                <th>Timestamp</th>
+            </tr>
+        </thead>
+        <tbody id='errorTableBody'>
+        </tbody>
+    </table>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load initial errors
+            fetch('/api/errors')
+                .then(response => response.json())
+                .then(data => {
+                    updateErrorTable(data);
+                });
+            
+            // Set up SignalR connection
+            const connection = new signalR.HubConnectionBuilder()
+                .withUrl('/errorHub')
+                .configureLogging(signalR.LogLevel.Information)
+                .build();
+            
+            // Handle new errors
+            connection.on('ReceiveError', (error) => {
+                addErrorToTable(error);
+                document.getElementById('errorCount').textContent = 
+                    (parseInt(document.getElementById('errorCount').textContent) + 1).toString();
+            });
+            
+            // Start the connection
+            connection.start()
+                .then(() => console.log('SignalR Connected'))
+                .catch(err => console.error('SignalR Connection Error: ', err));
+                
+            // Function to update the error table
+            function updateErrorTable(errors) {
+                const tableBody = document.getElementById('errorTableBody');
+                document.getElementById('errorCount').textContent = errors.length.toString();
+                
+                errors.forEach(error => {
+                    addErrorToTable(error);
+                });
+            }
+            
+            // Function to add a new error to the table
+            function addErrorToTable(error) {
+                const tableBody = document.getElementById('errorTableBody');
+                const row = document.createElement('tr');
+                row.className = 'error-row';
+                
+                row.innerHTML = `
+                    <td>${error.counter}</td>
+                    <td>${error.runID}</td>
+                    <td>${error.errorMessage}</td>
+                    <td class='timestamp'>${new Date(error.timestamp).toLocaleString()}</td>
+                `;
+                
+                tableBody.insertBefore(row, tableBody.firstChild);
+            }
+        });
+    </script>
+</body>
+</html>

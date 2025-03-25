@@ -7,6 +7,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{02EA681E-C7D
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpRequestMaker", "src\HttpRequestMaker\HttpRequestMaker.csproj", "{35005888-BF19-4D67-8B26-FEAB0F441493}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpRequestReceiver", "src\HttpRequestReceiver\HttpRequestReceiver.csproj", "{29AB992C-519A-4BB8-AF14-939FA8A87E41}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -17,12 +19,17 @@ Global
 		{35005888-BF19-4D67-8B26-FEAB0F441493}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{35005888-BF19-4D67-8B26-FEAB0F441493}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{35005888-BF19-4D67-8B26-FEAB0F441493}.Release|Any CPU.Build.0 = Release|Any CPU
+		{29AB992C-519A-4BB8-AF14-939FA8A87E41}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{29AB992C-519A-4BB8-AF14-939FA8A87E41}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{29AB992C-519A-4BB8-AF14-939FA8A87E41}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{29AB992C-519A-4BB8-AF14-939FA8A87E41}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{35005888-BF19-4D67-8B26-FEAB0F441493} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{29AB992C-519A-4BB8-AF14-939FA8A87E41} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {614A28B4-074D-4AFC-9D8D-77664FEA0272}
