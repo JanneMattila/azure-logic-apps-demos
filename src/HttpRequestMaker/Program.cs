@@ -2,54 +2,71 @@
 using System.Diagnostics;
 using System.Net.Http.Headers;
 
+// Create a HttpClient for the entire application
+HttpClient SharedHttpClient = new HttpClient();
+
+// Configure the HttpClient
+SharedHttpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
+SharedHttpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("HttpRequestMaker", "1.0"));
+
 // Main entry point for the application
 if (args.Length == 0)
 {
-    Console.WriteLine("Usage: HttpRequestMaker <URL> [timeout_seconds=60]");
+    Console.WriteLine("Usage: HttpRequestMaker <URL> [timeout_seconds=60] [initial_parallel_requests]");
     return 1;
 }
 
 string url = args[0];
 int durationSeconds = args.Length > 1 && int.TryParse(args[1], out int duration) ? duration : 60;
+int initialParallelRequests = args.Length > 2 && int.TryParse(args[2], out int initial) ? initial : 0;
 
 Console.WriteLine($"Starting performance test for {url}");
 Console.WriteLine($"Test will run for {durationSeconds} seconds");
 Console.WriteLine($"Press Ctrl+C to stop the test early");
 Console.WriteLine();
 
-// Create an HttpClient factory that creates clients with proper configuration
-HttpClient CreateHttpClient()
-{
-    var client = new HttpClient();
-    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
-    client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("HttpRequestMaker", "1.0"));
-    return client;
-}
-
 // Get the number of processors in the system for parallelism
 int processorCount = Environment.ProcessorCount;
-Console.WriteLine($"Detected {processorCount} processors. Starting with {processorCount} concurrent requests.");
+int concurrentRequests = initialParallelRequests > 0 ? initialParallelRequests : processorCount;
+Console.WriteLine($"Detected {processorCount} processors. Starting with {concurrentRequests} concurrent requests.");
 
 // Initialize test variables
-var statistics = new TestStatistics();
+var cumulativeStats = new TestStatistics();
+var currentSecondStats = new TestStatistics();
+var lastSecondStats = new TestStatistics();
 var stopwatch = new Stopwatch();
 stopwatch.Start();
 
 // Create a cancellation token source for test duration
 using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(durationSeconds));
-int concurrentRequests = processorCount; // Start with one request per processor
 bool scaleDown = false;
+int parallelIncreaseRate = Math.Max(1, processorCount / 2); // More aggressive scaling - add multiple parallel requests
 
 // Setup performance monitoring
 Timer? statsTimer = null;
-var lastStats = new TestStatistics();
 DateTime lastStatsTime = DateTime.Now;
 
 statsTimer = new Timer(_ =>
 {
     var currentTime = DateTime.Now;
     var elapsedSeconds = (currentTime - lastStatsTime).TotalSeconds;
-    var requestsPerSecond = (statistics.TotalRequests - lastStats.TotalRequests) / elapsedSeconds;
+    
+    // Update last second stats (copy current values)
+    lastSecondStats._totalRequests = currentSecondStats._totalRequests;
+    lastSecondStats._successfulRequests = currentSecondStats._successfulRequests;
+    lastSecondStats._failedRequests = currentSecondStats._failedRequests;
+    lastSecondStats._bytesSent = currentSecondStats._bytesSent;
+    lastSecondStats._bytesReceived = currentSecondStats._bytesReceived;
+    
+    // Reset current second stats for the next interval
+    currentSecondStats._totalRequests = 0;
+    currentSecondStats._successfulRequests = 0;
+    currentSecondStats._failedRequests = 0;
+    currentSecondStats._bytesSent = 0;
+    currentSecondStats._bytesReceived = 0;
+    
+    // Calculate rates for display
+    var requestsPerSecond = lastSecondStats.TotalRequests / elapsedSeconds;
     
     // Format data transfer rates
     string FormatDataSize(long bytes)
@@ -62,29 +79,27 @@ statsTimer = new Timer(_ =>
             return $"{bytes / (1024.0 * 1024.0):F2} MB";
     }
 
-    var bytesSentRate = FormatDataSize((long)((statistics.BytesSent - lastStats.BytesSent) / elapsedSeconds));
-    var bytesReceivedRate = FormatDataSize((long)((statistics.BytesReceived - lastStats.BytesReceived) / elapsedSeconds));
+    var bytesSentRate = FormatDataSize((long)(lastSecondStats.BytesSent / elapsedSeconds));
+    var bytesReceivedRate = FormatDataSize((long)(lastSecondStats.BytesReceived / elapsedSeconds));
+    double successRatePercentage = lastSecondStats.TotalRequests > 0 
+        ? (double)lastSecondStats.SuccessfulRequests / lastSecondStats.TotalRequests * 100 
+        : 0;
 
     Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] " +
-        $"Requests: {statistics.TotalRequests} ({requestsPerSecond:F1}/sec) | " +
-        $"Success: {statistics.SuccessfulRequests} ({statistics.SuccessRatePercentage:F1}%) | " +
-        $"Failed: {statistics.FailedRequests} | " +
+        $"Requests/sec: {requestsPerSecond:F1} | " +
+        $"Success/sec: {lastSecondStats.SuccessfulRequests} ({successRatePercentage:F1}%) | " +
+        $"Failed/sec: {lastSecondStats.FailedRequests} | " +
+        $"Total: {cumulativeStats.TotalRequests} | " +
         $"Concurrent: {concurrentRequests} | " +
         $"Traffic: ↑ {bytesSentRate}/s ↓ {bytesReceivedRate}/s");
 
-    // Update last stats for next calculation
-    lastStats._totalRequests = statistics.TotalRequests;
-    lastStats._successfulRequests = statistics.SuccessfulRequests;
-    lastStats._failedRequests = statistics.FailedRequests;
-    lastStats._bytesSent = statistics.BytesSent;
-    lastStats._bytesReceived = statistics.BytesReceived;
     lastStatsTime = currentTime;
 
-    // If all requests are successful, increase concurrency
-    if (!scaleDown && statistics.FailedRequests == 0 && statistics.TotalRequests > lastStats.TotalRequests)
+    // If all requests in the last second were successful, increase concurrency more aggressively
+    if (!scaleDown && lastSecondStats.FailedRequests == 0 && lastSecondStats.TotalRequests > 0)
     {
-        concurrentRequests++;
-        Console.WriteLine($"Scaling up to {concurrentRequests} concurrent requests");
+        concurrentRequests += parallelIncreaseRate;
+        Console.WriteLine($"Scaling up to {concurrentRequests} concurrent requests (+{parallelIncreaseRate})");
     }
 
 }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
@@ -107,33 +122,39 @@ try
             {
                 try
                 {
-                    using var client = CreateHttpClient();
                     var requestStopwatch = new Stopwatch();
                     requestStopwatch.Start();
 
-                    var response = await client.GetAsync(url, cts.Token);
+                    var response = await SharedHttpClient.GetAsync(url, cts.Token);
                     var responseContent = await response.Content.ReadAsByteArrayAsync(cts.Token);
 
                     requestStopwatch.Stop();
 
-                    // Update statistics atomically
-                    Interlocked.Increment(ref statistics._totalRequests);
-                    Interlocked.Add(ref statistics._bytesSent, url.Length);
-                    Interlocked.Add(ref statistics._bytesReceived, responseContent.Length);
+                    // Update both current second stats and cumulative stats atomically
+                    Interlocked.Increment(ref currentSecondStats._totalRequests);
+                    Interlocked.Increment(ref cumulativeStats._totalRequests);
+                    
+                    Interlocked.Add(ref currentSecondStats._bytesSent, url.Length);
+                    Interlocked.Add(ref cumulativeStats._bytesSent, url.Length);
+                    
+                    Interlocked.Add(ref currentSecondStats._bytesReceived, responseContent.Length);
+                    Interlocked.Add(ref cumulativeStats._bytesReceived, responseContent.Length);
                     
                     if (response.IsSuccessStatusCode)
                     {
-                        Interlocked.Increment(ref statistics._successfulRequests);
+                        Interlocked.Increment(ref currentSecondStats._successfulRequests);
+                        Interlocked.Increment(ref cumulativeStats._successfulRequests);
                     }
                     else
                     {
-                        Interlocked.Increment(ref statistics._failedRequests);
+                        Interlocked.Increment(ref currentSecondStats._failedRequests);
+                        Interlocked.Increment(ref cumulativeStats._failedRequests);
                         
-                        // If we have failures, scale down the concurrent requests
-                        if (!scaleDown && statistics.FailedRequests > 0)
+                        // If we have failures, scale down the concurrent requests more aggressively
+                        if (!scaleDown && currentSecondStats.FailedRequests > 0)
                         {
                             scaleDown = true;
-                            int newConcurrentRequests = Math.Max(1, concurrentRequests / 2);
+                            int newConcurrentRequests = Math.Max(processorCount, concurrentRequests / 2);
                             Console.WriteLine($"Requests failing. Scaling down to {newConcurrentRequests} concurrent requests");
                             concurrentRequests = newConcurrentRequests;
                         }
@@ -141,14 +162,17 @@ try
                 }
                 catch (Exception ex) when (ex is not OperationCanceledException)
                 {
-                    Interlocked.Increment(ref statistics._totalRequests);
-                    Interlocked.Increment(ref statistics._failedRequests);
+                    Interlocked.Increment(ref currentSecondStats._totalRequests);
+                    Interlocked.Increment(ref cumulativeStats._totalRequests);
+                    
+                    Interlocked.Increment(ref currentSecondStats._failedRequests);
+                    Interlocked.Increment(ref cumulativeStats._failedRequests);
 
                     // If we have failures, scale down the concurrent requests
-                    if (!scaleDown && statistics.FailedRequests > 0)
+                    if (!scaleDown && currentSecondStats.FailedRequests > 0)
                     {
                         scaleDown = true;
-                        int newConcurrentRequests = Math.Max(1, concurrentRequests / 2);
+                        int newConcurrentRequests = Math.Max(processorCount, concurrentRequests / 2);
                         Console.WriteLine($"Requests failing. Scaling down to {newConcurrentRequests} concurrent requests");
                         concurrentRequests = newConcurrentRequests;
                     }
@@ -156,8 +180,8 @@ try
             }));
         }
 
-        // Reset scale down flag periodically to allow re-scaling up
-        if (scaleDown && statistics.TotalRequests % 100 == 0)
+        // Reset scale down flag more frequently to allow more aggressive scaling up
+        if (scaleDown && cumulativeStats.TotalRequests % 20 == 0)
         {
             scaleDown = false;
         }
@@ -183,10 +207,10 @@ Console.WriteLine("-------------------------------------------");
 Console.WriteLine($"Performance Test Results for {url}");
 Console.WriteLine("-------------------------------------------");
 Console.WriteLine($"Test duration: {durationMinutes:F2} minutes");
-Console.WriteLine($"Total requests: {statistics.TotalRequests}");
-Console.WriteLine($"Successful requests: {statistics.SuccessfulRequests} ({statistics.SuccessRatePercentage:F1}%)");
-Console.WriteLine($"Failed requests: {statistics.FailedRequests}");
-Console.WriteLine($"Requests per second: {statistics.TotalRequests / stopwatch.Elapsed.TotalSeconds:F1}");
+Console.WriteLine($"Total requests: {cumulativeStats.TotalRequests}");
+Console.WriteLine($"Successful requests: {cumulativeStats.SuccessfulRequests} ({cumulativeStats.SuccessRatePercentage:F1}%)");
+Console.WriteLine($"Failed requests: {cumulativeStats.FailedRequests}");
+Console.WriteLine($"Requests per second: {cumulativeStats.TotalRequests / stopwatch.Elapsed.TotalSeconds:F1}");
 
 // Format final transfer sizes
 string FormatTotalDataSize(long bytes)
@@ -201,8 +225,8 @@ string FormatTotalDataSize(long bytes)
         return $"{bytes / (1024.0 * 1024.0 * 1024.0):F2} GB";
 }
 
-Console.WriteLine($"Total data sent: {FormatTotalDataSize(statistics.BytesSent)}");
-Console.WriteLine($"Total data received: {FormatTotalDataSize(statistics.BytesReceived)}");
+Console.WriteLine($"Total data sent: {FormatTotalDataSize(cumulativeStats.BytesSent)}");
+Console.WriteLine($"Total data received: {FormatTotalDataSize(cumulativeStats.BytesReceived)}");
 Console.WriteLine("-------------------------------------------");
 
 return 0;
